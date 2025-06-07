@@ -45,20 +45,83 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class CounterPage extends ConsumerWidget {
+class CounterPage extends ConsumerStatefulWidget {
   const CounterPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<int> counter = ref.watch(counterProvider);
+  ConsumerState<CounterPage> createState() => _CounterPageState();
+}
+
+class _CounterPageState extends ConsumerState<CounterPage> {
+  int? startValue;
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    final AsyncValue<int> counter = ref.watch(counterProvider(startValue ?? 0));
+
+    // ref.listen(counterProvider, (previous, next) {
+    //   if (next >= 5) {
+    //     showDialog(
+    //       context: context,
+    //       builder: (context) {
+    //         return AlertDialog(
+    //           title: Text('Warning'),
+    //           content: Text('Counter dangerously high. Consider resetting it.'),
+    //           actions: [TextButton(onPressed: () {}, child: Text('OK'))],
+    //         );
+    //       },
+    //     );
+    //   }
+    // });
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('Riverpod Counter'),
         actions: [
+          // IconButton(
+          //   onPressed: () => ref.invalidate(counterProvider),
+          //   icon: const Icon(Icons.refresh),
+          // ),
           IconButton(
-            onPressed: () => ref.invalidate(counterProvider),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text('Reset Counter'),
+                    content: TextField(
+                      controller: _controller,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        hintText: 'Enter starting counter value',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          final value = int.tryParse(_controller.text);
+                          if (value != null) {
+                            setState(() {
+                              startValue = value;
+                            });
+                            _controller.clear();
+                          }
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Start'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -89,5 +152,11 @@ class CounterPage extends ConsumerWidget {
       //   child: const Icon(Icons.add),
       // ),
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 }

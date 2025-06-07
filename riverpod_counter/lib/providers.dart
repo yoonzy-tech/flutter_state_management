@@ -7,8 +7,12 @@ final websocketClientProvider = Provider<WebsocketClient>((ref) {
   return FakeWebsocketClient();
 });
 
-final counterProvider = StreamProvider<int>((ref) {
-  final websocketClient = ref.watch(websocketClientProvider);
-  return websocketClient.getCounterStream();
-});
+// final counterProvider = StreamProvider<int>((ref) {
+//   final websocketClient = ref.watch(websocketClientProvider);
+//   return websocketClient.getCounterStream();
+// });
 
+final counterProvider = StreamProvider.family.autoDispose<int, int>((ref, start) {
+  final websocketClient = ref.watch(websocketClientProvider);
+  return websocketClient.getCounterStream(start);
+});
