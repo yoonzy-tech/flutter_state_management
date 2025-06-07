@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const CounterPage(),
+      home: const HomePage(),
     );
   }
 }
@@ -26,7 +26,6 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -36,11 +35,9 @@ class HomePage extends StatelessWidget {
         child: ElevatedButton(
           child: const Text('Go to Counter'),
           onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => CounterPage(),
-              ),
-            );
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (context) => CounterPage()));
           },
         ),
       ),
@@ -48,19 +45,18 @@ class HomePage extends StatelessWidget {
   }
 }
 
-
 class CounterPage extends ConsumerWidget {
   const CounterPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final int counter = ref.watch(counterProvider);
+    final AsyncValue<int> counter = ref.watch(counterProvider);
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('Riverpod Counter'),
-          actions: [
+        actions: [
           IconButton(
             onPressed: () => ref.invalidate(counterProvider),
             icon: const Icon(Icons.refresh),
@@ -73,17 +69,25 @@ class CounterPage extends ConsumerWidget {
           children: <Widget>[
             const Text('You have pushed the button this many times:'),
             Text(
-              '$counter', 
-            style: Theme.of(context).textTheme.headlineMedium,
+              counter
+                  .when(
+                    data: (int data) => data.toString(),
+                    error:
+                        (Object error, StackTrace stackTrace) =>
+                            error.toString(),
+                    loading: () => 0,
+                  )
+                  .toString(),
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => ref.read(counterProvider.notifier).state++,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () => ref.read(counterProvider.notifier).state++,
+      //   tooltip: 'Increment',
+      //   child: const Icon(Icons.add),
+      // ),
     );
   }
 }
