@@ -12,6 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Riverpod Counter',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -45,20 +46,14 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class CounterPage extends ConsumerStatefulWidget {
+class CounterPage extends ConsumerWidget {
   const CounterPage({super.key});
 
   @override
-  ConsumerState<CounterPage> createState() => _CounterPageState();
-}
-
-class _CounterPageState extends ConsumerState<CounterPage> {
-  int? startValue;
-  final TextEditingController _controller = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    final AsyncValue<int> counter = ref.watch(counterProvider(startValue ?? 0));
+  Widget build(BuildContext context, WidgetRef ref) {
+    final TextEditingController controller = TextEditingController();
+    final startValue = ref.watch(startValueProvider);
+    final AsyncValue<int> counter = ref.watch(counterProvider(startValue));
 
     // ref.listen(counterProvider, (previous, next) {
     //   if (next >= 5) {
@@ -92,7 +87,7 @@ class _CounterPageState extends ConsumerState<CounterPage> {
                   return AlertDialog(
                     title: Text('Reset Counter'),
                     content: TextField(
-                      controller: _controller,
+                      controller: controller,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
                         hintText: 'Enter starting counter value',
@@ -106,12 +101,10 @@ class _CounterPageState extends ConsumerState<CounterPage> {
                       ),
                       TextButton(
                         onPressed: () {
-                          final value = int.tryParse(_controller.text);
+                          final value = int.tryParse(controller.text);
                           if (value != null) {
-                            setState(() {
-                              startValue = value;
-                            });
-                            _controller.clear();
+                            ref.read(startValueProvider.notifier).state = value;
+                            controller.clear();
                           }
                           Navigator.of(context).pop();
                         },
@@ -152,11 +145,5 @@ class _CounterPageState extends ConsumerState<CounterPage> {
       //   child: const Icon(Icons.add),
       // ),
     );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 }
