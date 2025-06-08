@@ -131,7 +131,7 @@ class CounterPage extends ConsumerWidget {
                     error:
                         (Object error, StackTrace stackTrace) =>
                             error.toString(),
-                    loading: () => 0,
+                    loading: () => const CircularProgressIndicator(),
                   )
                   .toString(),
               style: Theme.of(context).textTheme.headlineMedium,
